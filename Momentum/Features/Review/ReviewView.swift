@@ -40,7 +40,7 @@ struct ReviewView: View {
             if !review.shipped.isEmpty || !review.stageChanges.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
                     CardLabel(text: "Wins", symbol: "trophy", tint: .yellow)
-                    ForEach(review.shipped + review.stageChanges, id: \.self) { line in
+                    ForEach(Array((review.shipped + review.stageChanges).enumerated()), id: \.offset) { _, line in
                         Label(line, systemImage: "checkmark.circle.fill")
                             .font(.subheadline)
                             .symbolRenderingMode(.hierarchical)

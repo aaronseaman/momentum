@@ -101,7 +101,7 @@ final class AppModel {
         Task { await refresh() }
         loopTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(30 * 60))
+                do { try await Task.sleep(for: .seconds(30 * 60)) } catch { return }
                 guard let self else { return }
                 self.tick()
                 await self.refresh()
@@ -133,7 +133,7 @@ final class AppModel {
     func backgroundRefresh() async {
         scheduleBackgroundRefresh()
         await refresh()
-        saveNow()
+        saveNowBlocking()
     }
 
     // MARK: Mutation & persistence
@@ -165,6 +165,14 @@ final class AppModel {
         Task.detached(priority: .utility) {
             try? store.save(snapshot)
         }
+    }
+
+    /// Writes synchronously. Used when iOS may suspend the app right after we return
+    /// (background refresh, answering from a notification).
+    func saveNowBlocking() {
+        guard !storageBlocked else { return }
+        saveTask?.cancel()
+        try? store.save(data)
     }
 
     func tick() {
@@ -468,6 +476,7 @@ final class AppModel {
         case .planTomorrow: planTomorrow()
         case .open: tab = .today
         }
+        saveNowBlocking()
     }
 
     // MARK: Projects
@@ -653,6 +662,9 @@ final class AppModel {
 
     func deleteEverything() {
         loopTask?.cancel()
+        loopTask = nil
+        saveTask?.cancel()
+        scheduleTask?.cancel()
         secrets.wipeAll()
         store.wipe()
         notifications.removeAll()

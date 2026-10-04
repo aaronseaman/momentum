@@ -1,10 +1,11 @@
+import Foundation
 import AppIntents
 import MomentumKit
 
 /// "Hey Siri, what's my next action in Momentum?"
 struct NextActionIntent: AppIntent {
     static let title: LocalizedStringResource = "What's my next action?"
-    static let description = IntentDescription("Tells you the single most useful next step.")
+    static let description: IntentDescription? = IntentDescription("Tells you the single most useful next step.")
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -16,7 +17,7 @@ struct NextActionIntent: AppIntent {
 /// "How much did I make this month?"
 struct RevenueIntent: AppIntent {
     static let title: LocalizedStringResource = "How much did I make?"
-    static let description = IntentDescription("Answers money questions like “this month” or “yesterday”.")
+    static let description: IntentDescription? = IntentDescription("Answers money questions like “this month” or “yesterday”.")
 
     @Parameter(title: "Question", default: "How much did I make this month?")
     var question: String
@@ -34,7 +35,7 @@ struct RevenueIntent: AppIntent {
 
 struct StartFocusIntent: AppIntent {
     static let title: LocalizedStringResource = "Start a focus session"
-    static let description = IntentDescription("Starts a focus timer on your next action.")
+    static let description: IntentDescription? = IntentDescription("Starts a focus timer on your next action.")
     static let openAppWhenRun = true
 
     @MainActor
@@ -46,7 +47,7 @@ struct StartFocusIntent: AppIntent {
 
 struct OverwhelmedIntent: AppIntent {
     static let title: LocalizedStringResource = "I'm overwhelmed"
-    static let description = IntentDescription("Hides everything except one tiny step.")
+    static let description: IntentDescription? = IntentDescription("Hides everything except one tiny step.")
     static let openAppWhenRun = true
 
     @MainActor

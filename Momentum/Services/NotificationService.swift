@@ -64,7 +64,12 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         let pending = await center.pendingNotificationRequests()
         center.removePendingNotificationRequests(withIdentifiers: pending.map(\.identifier).filter { $0.hasPrefix(Self.briefPrefix) })
 
-        var categories: Set<UNNotificationCategory> = [Self.focusCategory, Self.planCategory]
+        // Keep categories for still-pending questions so delivered alerts keep their answer buttons.
+        let pendingIDs = Set(data.pendingQuestions.map { "q.\($0.id.uuidString)" })
+        var categories = await center.notificationCategories()
+            .filter { !$0.identifier.hasPrefix("q.") || pendingIDs.contains($0.identifier) }
+        categories.insert(Self.focusCategory)
+        categories.insert(Self.planCategory)
         let question = QuestionEngine.current(data, now: now)
         if let question { categories.insert(Self.category(for: question)) }
         center.setNotificationCategories(categories)
