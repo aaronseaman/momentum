@@ -4,14 +4,19 @@
 
 | Area | State |
 |---|---|
-| Core logic (`MomentumKit`) | **Done and tested.** It compiles in Swift 6 strict-concurrency mode, and all 49 unit tests pass (run on Linux with Swift 6.0.3, and in CI on macOS). |
-| SwiftUI app (`Momentum/`) | **Feature-complete for v1.0.** CI builds it for iOS and macOS (see "CI status" below). It has not been run on a device or simulator yet. |
-| Xcode project | `Momentum.xcodeproj`: one multiplatform target (iOS 18+, macOS 15+). Sources are folder-synced, so adding files needs no project edits. It links the local package. |
-| Signing | **Not set.** You need to choose a team and a bundle ID (default `com.aaronseaman.Momentum`). |
+| Core logic (`MomentumKit`) | **Done and tested.** It compiles in Swift 6 strict-concurrency mode. All 49 unit tests pass on Linux (Swift 6.0.3) and on macOS in CI (Xcode 26.3). |
+| SwiftUI app (`Momentum/`) | **Feature-complete for v1.0. It compiles for iOS and macOS with no errors or deprecation warnings** (CI, Xcode 26.3). A separate review checked it line by line against the 26 SDK; the runtime bugs it found are fixed. It has not been launched on a device or simulator yet. |
+| Xcode project | `Momentum.xcodeproj`: one multiplatform target (iOS 18+, macOS 15+). Sources are folder-synced, so adding files needs no project edits. It links the local package. The shared scheme builds the app and runs the package tests. |
+| Signing | **Not set.** Pick a team and a bundle ID (default `com.aaronseaman.Momentum`). |
 | App Store assets | The app icon (iOS and macOS sizes), accent color and privacy manifest are included. Screenshots and store listing are not done. |
 
 ### CI status
-GitHub Actions (`.github/workflows/ci.yml`) runs three jobs on every push: package tests, an iOS Simulator build, and a macOS build. To see the latest result, check the Actions tab on the `claude/momentum-app` branch.
+GitHub Actions (`.github/workflows/ci.yml`) runs three jobs on every push: package tests, an iOS Simulator build and a macOS build. All three are green on `claude/momentum-app`.
+
+### Check by hand in Xcode (flagged by the review, believed fine)
+- `FoundationModels` must be weak-linked, because the deployment target (iOS 18 / macOS 15) is lower than the framework's (26). Run `otool -L` on the built binary and check it appears as `LC_LOAD_WEAK_DYLIB`, then launch once on an iOS 18 or macOS 15 device.
+- If a newer SDK flags the `Binding(get:set:)` closures in SettingsView and ProjectsView for actor isolation, wrap their bodies in `MainActor.assumeIsolated { … }`.
+- Siri and Shortcuts should show the four App Shortcuts with their descriptions.
 
 ### What still needs a Mac (in order)
 1. Open the project and set the signing team and bundle ID.
